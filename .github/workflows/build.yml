@@ -59,5 +59,14 @@ jobs:
       run: |
         export PATH=$PATH:$PWD/musl/bin
         make -C kernel ARCH=${{ matrix.arch }}
+    
+    - name: Archive
+      run: | 
+        zip  -j -r ${{ matrix.arch }}.zip kernel/target/${{ matrix.arch }}/release/nimbos
 
-
+    name: Release
+        uses: softprops/action-gh-release@v2
+        if: startsWith(github.ref, 'refs/tags/')
+        with:
+          files: |
+            ${{ matrix.arch }}.zip
