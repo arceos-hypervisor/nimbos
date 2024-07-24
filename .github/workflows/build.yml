@@ -60,20 +60,4 @@ jobs:
         export PATH=$PATH:$PWD/musl/bin
         make -C kernel ARCH=${{ matrix.arch }}
 
-    - name: Archive
-      run: | 
-        zip  -j -r ${{ matrix.arch }}.zip kernel/target/${{ matrix.arch }}/release/nimbos
-    
-    - name: Create Release
-      id: create_release
-      uses: actions/create-release@v1
-      env:
-        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }} # This token is provided by Actions, you do not need to create your own token
-      with:
-        tag_name: main
-        release_name: Release main
-        body: |
-          test
-        draft: false
-        prerelease: false
 

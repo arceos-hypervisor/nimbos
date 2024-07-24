@@ -3,6 +3,9 @@ on:
     tags:
       - "v*"
 
+permissions:
+  contents: write
+
 jobs:
 
   # steps for building assets
@@ -56,6 +59,6 @@ jobs:
       uses: shogo82148/actions-upload-release-asset@v1
       with:
         upload_url: ${{ steps.create_release.outputs.upload_url }}
-        asset_path: assets.txt
+        asset_path: ${{ matrix.arch }}.zip
 
     # shogo82148/actions-create-release publishes the release in the end of the job.
