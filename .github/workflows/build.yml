@@ -1,5 +1,8 @@
 name: Build CI
 
+permissions:
+  contents: write
+
 on: [push, pull_request]
 
 jobs:
@@ -38,9 +41,7 @@ jobs:
         tag_name: ${{ github.ref }}
         release_name: Release ${{ github.ref }}
         body: |
-          Changes in this Release
-          - First Change
-          - Second Change
+          test
         draft: false
         prerelease: false
     - id: step_version
