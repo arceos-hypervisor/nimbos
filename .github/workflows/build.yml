@@ -25,29 +25,29 @@ jobs:
     - name: Check code format
       run: cd kernel && cargo fmt -- --check
 
-  release:
-    name: Create Release
-    runs-on: ubuntu-latest
-    outputs:
-      version: ${{ steps.step_version.outputs.version }}
-      upload_url: ${{ steps.step_upload_url.outputs.upload_url }}
-    steps:
-    - name: Create Release
-      id: create_release
-      uses: actions/create-release@v1
-      env:
-        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }} # This token is provided by Actions, you do not need to create your own token
-      with:
-        tag_name: main
-        release_name: Release main
-        body: |
-          test
-        draft: false
-        prerelease: false
-    - id: step_version
-      run: echo "version=${{ steps.package_version.outputs.version }}" >> "$GITHUB_OUTPUT"
-    - id: step_upload_url
-      run: echo "upload_url=${{ steps.create_release.outputs.upload_url }}" >> "$GITHUB_OUTPUT"
+  # release:
+  #   name: Create Release
+  #   runs-on: ubuntu-latest
+  #   outputs:
+  #     version: ${{ steps.step_version.outputs.version }}
+  #     upload_url: ${{ steps.step_upload_url.outputs.upload_url }}
+  #   steps:
+  #   - name: Create Release
+  #     id: create_release
+  #     uses: actions/create-release@v1
+  #     env:
+  #       GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }} # This token is provided by Actions, you do not need to create your own token
+  #     with:
+  #       tag_name: main
+  #       release_name: Release main
+  #       body: |
+  #         test
+  #       draft: false
+  #       prerelease: false
+  #   - id: step_version
+  #     run: echo "version=${{ steps.package_version.outputs.version }}" >> "$GITHUB_OUTPUT"
+  #   - id: step_upload_url
+  #     run: echo "upload_url=${{ steps.create_release.outputs.upload_url }}" >> "$GITHUB_OUTPUT"
 
   build:
     runs-on: ${{ matrix.os }}
@@ -87,13 +87,26 @@ jobs:
     - name: Archive
       run: | 
         zip  -j -r ${{ matrix.arch }}.zip kernel/target/${{ matrix.arch }}/release/nimbos
+    
+    - name: Create Release
+      id: create_release
+      uses: actions/create-release@v1
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }} # This token is provided by Actions, you do not need to create your own token
+      with:
+        tag_name: main
+        release_name: Release main
+        body: |
+          test
+        draft: false
+        prerelease: false
 
     - name: Upload asset
       uses: actions/upload-release-asset@v1.0.1
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       with:
-        upload_url: ${{ needs.release.outputs.upload_url }}
+        upload_url: ${{ steps.create_release.outputs.upload_url }}
         asset_path: ${{ matrix.arch }}.zip
         asset_name: nimbos-${{ github.ref_name }}-${{ matrix.arch }}.zip
         asset_content_type: application/zip
