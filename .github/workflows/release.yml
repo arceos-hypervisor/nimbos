@@ -1,30 +1,11 @@
-name: Build CI
-
-permissions:
-  contents: write
-
-on: [push, pull_request]
+on:
+  push:
+    tags:
+      - "v*"
 
 jobs:
-  clippy:
-    runs-on: ubuntu-latest
-    strategy:
-      fail-fast: false
-      matrix:
-        arch: [x86_64, aarch64, riscv64]
-    steps:
-    - uses: actions/checkout@v2
-    - uses: actions-rs/toolchain@v1
-      with:
-        profile: minimal
-        toolchain: nightly-2022-11-03
-        override: true
-        components: rust-src, clippy, rustfmt
-    - name: Clippy
-      run: make -C kernel clippy ARCH=${{ matrix.arch }}
-    - name: Check code format
-      run: cd kernel && cargo fmt -- --check
 
+  # steps for building assets
   build:
     runs-on: ${{ matrix.os }}
     strategy:
@@ -63,17 +44,18 @@ jobs:
     - name: Archive
       run: | 
         zip  -j -r ${{ matrix.arch }}.zip kernel/target/${{ matrix.arch }}/release/nimbos
-    
-    - name: Create Release
-      id: create_release
-      uses: actions/create-release@v1
-      env:
-        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }} # This token is provided by Actions, you do not need to create your own token
-      with:
-        tag_name: main
-        release_name: Release main
-        body: |
-          test
-        draft: false
-        prerelease: false
 
+    - name: Create a Release
+      id: create_release
+      uses: shogo82148/actions-create-release@v1
+
+    # A release created by shogo82148/actions-create-release is alway draft here.
+    # So users may not see an empty release.
+
+    - name: Upload Assets
+      uses: shogo82148/actions-upload-release-asset@v1
+      with:
+        upload_url: ${{ steps.create_release.outputs.upload_url }}
+        asset_path: assets.txt
+
+    # shogo82148/actions-create-release publishes the release in the end of the job.
