@@ -59,7 +59,7 @@ jobs:
 
     - name: Archive
       run: | 
-        zip  -j -r ${{ matrix.arch }}.zip target/${{ matrix.arch }}/release/nimbos
+        zip  -j -r ${{ matrix.arch }}.zip kernel/target/${{ matrix.arch }}/release/nimbos
 
     - name: Upload asset
       uses: actions/upload-release-asset@v1.0.1
