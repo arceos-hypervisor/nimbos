@@ -56,3 +56,18 @@ jobs:
       run: |
         export PATH=$PATH:$PWD/musl/bin
         make -C kernel ARCH=${{ matrix.arch }}
+
+    - name: Archive
+      run: | 
+        zip  -j -r ${{ matrix.arch }}.zip target/${{ matrix.arch }}/release/nimbos
+
+    - name: Upload asset
+      uses: actions/upload-release-asset@v1.0.1
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      with:
+        upload_url: ${{ github.event.release.upload_url }}
+        asset_path: ${{ matrix.platform.target }}.zip
+        asset_name: nimbos-${{ github.ref_name }}-${{ matrix.arch }}.zip
+        asset_content_type: application/zip
+
