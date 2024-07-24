@@ -30,9 +30,9 @@ jobs:
       upload_url: ${{ steps.step_upload_url.outputs.upload_url }}
     steps:
     - id: step_version
-      run: echo "::set-output name=version::${{ steps.package_version.outputs.version }}"
+      run: echo "version=${{ steps.package_version.outputs.version }}" >> "$GITHUB_OUTPUT"
     - id: step_upload_url
-      run: echo "::set-output name=upload_url::${{ steps.create_release.outputs.upload_url }}"
+      run: echo "upload_url=${{ steps.create_release.outputs.upload_url }}" >> "$GITHUB_OUTPUT"
 
   build:
     runs-on: ${{ matrix.os }}
