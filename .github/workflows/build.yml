@@ -62,7 +62,7 @@ jobs:
     
     - name: Archive
       run: | 
-        zip  -j -r ${{ matrix.arch }}.zip kernel/target/${{ matrix.arch }}/release/nimbos
+        zip  -j -r ${{ matrix.arch }}.zip kernel/target/${{ matrix.arch }}/release/nimbos.bin
     
     - name: Release
       uses: softprops/action-gh-release@v2
