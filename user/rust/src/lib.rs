@@ -87,14 +87,17 @@ const REBOOT_CMD_RESTART: usize = 0x5265644f; // "RedO"
 const REBOOT_CMD_HALT: usize = 0x46725a6e; // "FrZn"
 const REBOOT_CMD_POWER_OFF: usize = 0x6f387333; // "o8s3"
 
-pub fn reboot() -> isize {
-    sys_reboot(REBOOT_MAGIC1, REBOOT_MAGIC2, REBOOT_CMD_RESTART)
+pub fn reboot() -> ! {
+    sys_reboot(REBOOT_MAGIC1, REBOOT_MAGIC2, REBOOT_CMD_RESTART);
+    unreachable!("Reboot failed!");
 }
 
-pub fn halt() -> isize {
-    sys_reboot(REBOOT_MAGIC1, REBOOT_MAGIC2, REBOOT_CMD_HALT)
+pub fn halt() -> ! {
+    sys_reboot(REBOOT_MAGIC1, REBOOT_MAGIC2, REBOOT_CMD_HALT);
+    unreachable!("Halt failed!");
 }
 
 pub fn power_off() -> ! {
     sys_reboot(REBOOT_MAGIC1, REBOOT_MAGIC2, REBOOT_CMD_POWER_OFF);
+    unreachable!("Power off failed!");
 }

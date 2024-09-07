@@ -56,8 +56,7 @@ pub fn sys_waitpid(pid: isize, exit_code: *mut i32, options: u32) -> isize {
 }
 
 pub fn sys_reboot(magic1: usize, magic2: usize, cmd: usize) -> isize {
-    syscall(SYSCALL_REBOOT, [magic1, magic2, cmd]);
-    panic!("sys_reboot never returns!")
+    syscall(SYSCALL_REBOOT, [magic1, magic2, cmd])
 }
 
 pub fn sys_clock_gettime(clk: ClockId, req: &mut TimeSpec) -> isize {
