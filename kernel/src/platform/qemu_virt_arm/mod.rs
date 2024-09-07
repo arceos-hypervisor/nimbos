@@ -130,3 +130,7 @@ unsafe extern "C" fn _start() -> ! {
         options(noreturn),
     )
 }
+
+pub fn power_off() -> ! {
+    todo!()
+}
