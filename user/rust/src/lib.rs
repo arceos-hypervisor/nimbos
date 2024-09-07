@@ -77,3 +77,24 @@ pub fn thread_spawn(entry: fn(usize) -> i32, arg: usize) -> isize {
     let newsp = unsafe { THREAD_STACKS[thread_id].as_ptr_range().end as usize };
     sys_clone(entry, arg, newsp)
 }
+
+const REBOOT_MAGIC1: usize = 0xfee1dead;
+const REBOOT_MAGIC2: usize = 672274793; // our respect to Linus Torvalds
+const REBOOT_MAGIC2A: usize = 0x52564d21; // "RVM!"
+const REBOOT_MAGIC2B: usize = 0x4e696d62; // "Nimb"
+
+const REBOOT_CMD_RESTART: usize = 0x5265644f; // "RedO"
+const REBOOT_CMD_HALT: usize = 0x46725a6e; // "FrZn"
+const REBOOT_CMD_POWER_OFF: usize = 0x6f387333; // "o8s3"
+
+pub fn reboot() -> isize {
+    sys_reboot(REBOOT_MAGIC1, REBOOT_MAGIC2, REBOOT_CMD_RESTART)
+}
+
+pub fn halt() -> isize {
+    sys_reboot(REBOOT_MAGIC1, REBOOT_MAGIC2, REBOOT_CMD_HALT)
+}
+
+pub fn power_off() -> ! {
+    sys_reboot(REBOOT_MAGIC1, REBOOT_MAGIC2, REBOOT_CMD_POWER_OFF);
+}

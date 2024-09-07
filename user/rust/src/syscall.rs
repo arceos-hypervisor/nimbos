@@ -12,6 +12,7 @@ pub const SYSCALL_FORK: usize = 57;
 pub const SYSCALL_EXEC: usize = 59;
 pub const SYSCALL_EXIT: usize = 60;
 pub const SYSCALL_WAITPID: usize = 61;
+pub const SYSCALL_REBOOT: usize = 169;
 pub const SYSCALL_CLOCK_GETTIME: usize = 228;
 pub const SYSCALL_CLOCK_NANOSLEEP: usize = 230;
 
@@ -52,6 +53,11 @@ pub fn sys_waitpid(pid: isize, exit_code: *mut i32, options: u32) -> isize {
         SYSCALL_WAITPID,
         [pid as usize, exit_code as _, options as _],
     )
+}
+
+pub fn sys_reboot(magic1: usize, magic2: usize, cmd: usize) -> isize {
+    syscall(SYSCALL_REBOOT, [magic1, magic2, cmd]);
+    panic!("sys_reboot never returns!")
 }
 
 pub fn sys_clock_gettime(clk: ClockId, req: &mut TimeSpec) -> isize {
