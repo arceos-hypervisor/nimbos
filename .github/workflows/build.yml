@@ -63,7 +63,7 @@ jobs:
       run: |
         export PATH=$PATH:$PWD/musl/bin
         cd user && make ARCH=${{ matrix.arch }} build
-        cd ../kernel && make build ARCH=${{ matrix.arch }} 
+        cd ../kernel && make build ARCH=${{ matrix.arch }} && cd ..
     
     - name: Archive
       run: | 
@@ -71,7 +71,7 @@ jobs:
     
     - name: Build kernel for usertests
       run: |
-        cd ../kernel && make build ARCH=${{ matrix.arch }} USER_ENTRY=usertests
+        cd ../kernel && make build ARCH=${{ matrix.arch }} USER_ENTRY=usertests && cd ..
     
     - name: Archive usertests
       run: | 
