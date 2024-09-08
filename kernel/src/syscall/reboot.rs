@@ -29,7 +29,7 @@ pub fn sys_reboot(magic1: usize, magic2: usize, cmd: usize) -> isize {
         }
         _ => {
             error!("Unsupported reboot command: {:#x}", cmd);
-            return -1;
+            -1
         }
     }
 }

@@ -48,7 +48,7 @@ pub fn init() {
     m.spawn(Task::new_kernel(test_kernel_task, 0xbeef));
 
     /// The first user task to run.
-    const USER_ENTRY: &'static str = {
+    const USER_ENTRY: &str = {
         match core::option_env!("USER_ENTRY") {
             Some(s) => s,
             None => panic!("USER_ENTRY is not defined, please set it in environment variables, or specify it when executing `make`."),
