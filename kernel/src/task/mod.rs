@@ -46,7 +46,15 @@ pub fn init() {
     m.spawn(ROOT_TASK.clone());
     m.spawn(Task::new_kernel(test_kernel_task, 0xdead));
     m.spawn(Task::new_kernel(test_kernel_task, 0xbeef));
-    m.spawn(Task::new_user("user_shell"));
+
+    /// The first user task to run.
+    const USER_ENTRY: &str = {
+        match core::option_env!("USER_ENTRY") {
+            Some(s) => s,
+            None => panic!("USER_ENTRY is not defined, please set it in environment variables, or specify it when executing `make`."),
+        }
+    };
+    m.spawn(Task::new_user(USER_ENTRY));
 
     TASK_INITED.store(true, Ordering::SeqCst);
 }

@@ -1,4 +1,4 @@
-name: Build CI
+name: Build, Clippy and Format
 
 permissions:
   contents: write
@@ -6,7 +6,7 @@ permissions:
 on: [push, pull_request]
 
 jobs:
-  clippy:
+  clippy_fmt:
     runs-on: ubuntu-latest
     strategy:
       fail-fast: false
@@ -20,10 +20,14 @@ jobs:
         toolchain: nightly-2022-11-03
         override: true
         components: rust-src, clippy, rustfmt
-    - name: Clippy
+    - name: Clippy kernel
       run: make -C kernel clippy ARCH=${{ matrix.arch }}
-    - name: Check code format
-      run: cd kernel && cargo fmt -- --check
+    - name: Clippy user
+      run: make -C user/rust clippy ARCH=${{ matrix.arch }}
+    - name: Check code format in kernel
+      run: cargo fmt --all --manifest-path=kernel/Cargo.toml -- --check
+    - name: Check code format in user
+      run: cargo fmt --all --manifest-path=user/rust/Cargo.toml -- --check
 
   build:
     runs-on: ${{ matrix.os }}
@@ -59,15 +63,24 @@ jobs:
       run: |
         export PATH=$PATH:$PWD/musl/bin
         cd user && make ARCH=${{ matrix.arch }} build
-        cd ../kernel && make build ARCH=${{ matrix.arch }} 
+        cd ../kernel && make build ARCH=${{ matrix.arch }} && cd ..
     
     - name: Archive
       run: | 
-        zip  -j -r ${{ matrix.arch }}.zip kernel/target/${{ matrix.arch }}/release/nimbos.bin
+        zip -j -r ${{ matrix.arch }}.zip kernel/target/${{ matrix.arch }}/release/nimbos.bin
     
+    - name: Build kernel for usertests
+      run: |
+        cd kernel && make build ARCH=${{ matrix.arch }} USER_ENTRY=usertests && cd ..
+    
+    - name: Archive usertests
+      run: | 
+        zip -j -r ${{ matrix.arch }}_usertests.zip kernel/target/${{ matrix.arch }}/release/nimbos.bin
+
     - name: Release
       uses: softprops/action-gh-release@v2
       if: startsWith(github.ref, 'refs/tags/')
       with:
         files: |
           ${{ matrix.arch }}.zip
+          ${{ matrix.arch }}_usertests.zip
