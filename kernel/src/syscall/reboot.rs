@@ -25,8 +25,7 @@ pub fn sys_reboot(magic1: usize, magic2: usize, cmd: usize) -> isize {
         }
         REBOOT_CMD_POWER_OFF => {
             info!("Powering off...");
-            crate::platform::power_off();
-            unreachable!();
+            crate::drivers::misc::shutdown();
         }
         _ => {
             error!("Unsupported reboot command: {:#x}", cmd);

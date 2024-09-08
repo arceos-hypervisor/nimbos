@@ -4,6 +4,7 @@ MODE ?= release
 LOG ?= warn
 RVM ?= off
 GUEST ?= off
+USER_ENTRY ?= user_shell
 
 # Platform
 ifeq ($(ARCH), x86_64)
@@ -27,6 +28,7 @@ export ARCH
 export PLATFORM
 export MODE
 export LOG
+export USER_ENTRY
 
 make_args := ARCH=$(ARCH) PLATFORM=$(PLATFORM) MODE=$(MODE) LOG=$(LOG)
 

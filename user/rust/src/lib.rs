@@ -79,9 +79,7 @@ pub fn thread_spawn(entry: fn(usize) -> i32, arg: usize) -> isize {
 }
 
 const REBOOT_MAGIC1: usize = 0xfee1dead;
-const REBOOT_MAGIC2: usize = 672274793; // our respect to Linus Torvalds
-const REBOOT_MAGIC2A: usize = 0x52564d21; // "RVM!"
-const REBOOT_MAGIC2B: usize = 0x4e696d62; // "Nimb"
+const REBOOT_MAGIC2: usize = 672274793;
 
 const REBOOT_CMD_RESTART: usize = 0x5265644f; // "RedO"
 const REBOOT_CMD_HALT: usize = 0x46725a6e; // "FrZn"
