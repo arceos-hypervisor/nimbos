@@ -44,7 +44,7 @@ ifeq ($(RVM), on)
   features += rvm
 endif
 
-build_args := --no-default-features --features "$(features)" --target $(target) -Zbuild-std=core,alloc -Zbuild-std-features=compiler-builtins-mem
+build_args := --no-default-features --features "$(features)" --target $(target) -Zbuild-std=core,alloc -Zbuild-std-features=compiler-builtins-mem -Z sparse-registry
 ifeq ($(MODE), release)
   build_args += --release
 endif
