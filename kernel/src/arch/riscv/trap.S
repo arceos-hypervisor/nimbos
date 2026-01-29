@@ -38,6 +38,7 @@
 
 .section .text
 .balign 4
+.global trap_vector_base
 trap_vector_base:
     // sscratch == 0: trap from kernel
     // sscratch != 0: trap from user
