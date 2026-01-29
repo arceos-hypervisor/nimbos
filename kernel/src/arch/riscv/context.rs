@@ -5,7 +5,8 @@ use riscv::register::{sepc, sscratch};
 use crate::arch::instructions;
 use crate::mm::{PhysAddr, VirtAddr};
 
-include_asm_marcos!();
+// include_asm_marcos! manually expanded here because macros defined there seems
+// to be not visible to naked_asm!
 
 #[repr(C)]
 #[derive(Debug, Default, Clone, Copy)]
@@ -91,24 +92,96 @@ impl TrapFrame {
         sepc::write(self.sepc);
         let kernel_tp_addr = kstack_top.as_usize() - core::mem::size_of::<TrapFrame>()
             + memoffset::offset_of!(GeneralRegisters, tp);
-        asm!("
+        #[cfg(target_arch = "riscv64")]
+        asm!(
+            "
             mv      sp, {tf}
-
-            LDR     t0, sp, 32
+            ld      t0, 32*{xlenb}(sp)
             csrw    sstatus, t0
-
-            STR     tp, {kernel_tp_addr}, 0
-            LDR     gp, sp, 2
-            LDR     tp, sp, 3
-
-            POP_GENERAL_REGS
-            LDR     sp, sp, 1
-
-            sret",
+            sd      tp, 0({kernel_tp_addr})
+            ld      gp, 2*{xlenb}(sp)
+            ld      tp, 3*{xlenb}(sp)
+            ld      ra, 0*{xlenb}(sp)
+            ld      t0, 4*{xlenb}(sp)
+            ld      t1, 5*{xlenb}(sp)
+            ld      t2, 6*{xlenb}(sp)
+            ld      s0, 7*{xlenb}(sp)
+            ld      s1, 8*{xlenb}(sp)
+            ld      a0, 9*{xlenb}(sp)
+            ld      a1, 10*{xlenb}(sp)
+            ld      a2, 11*{xlenb}(sp)
+            ld      a3, 12*{xlenb}(sp)
+            ld      a4, 13*{xlenb}(sp)
+            ld      a5, 14*{xlenb}(sp)
+            ld      a6, 15*{xlenb}(sp)
+            ld      a7, 16*{xlenb}(sp)
+            ld      s2, 17*{xlenb}(sp)
+            ld      s3, 18*{xlenb}(sp)
+            ld      s4, 19*{xlenb}(sp)
+            ld      s5, 20*{xlenb}(sp)
+            ld      s6, 21*{xlenb}(sp)
+            ld      s7, 22*{xlenb}(sp)
+            ld      s8, 23*{xlenb}(sp)
+            ld      s9, 24*{xlenb}(sp)
+            ld      s10, 25*{xlenb}(sp)
+            ld      s11, 26*{xlenb}(sp)
+            ld      t3, 27*{xlenb}(sp)
+            ld      t4, 28*{xlenb}(sp)
+            ld      t5, 29*{xlenb}(sp)
+            ld      t6, 30*{xlenb}(sp)
+            ld      sp, 1*{xlenb}(sp)
+            sret"
+           ,
             tf = in(reg) self,
             kernel_tp_addr = in(reg) kernel_tp_addr,
+            xlenb = const 8,
             options(noreturn),
-        )
+        );
+        #[cfg(target_arch = "riscv32")]
+        asm!(
+            "
+            mv      sp, {tf}
+            lw      t0, 32*{xlenb}(sp)
+            csrw    sstatus, t0
+            sw      tp, 0({kernel_tp_addr})
+            lw      gp, 2*{xlenb}(sp)
+            lw      tp, 3*{xlenb}(sp)
+            lw      ra, 0*{xlenb}(sp)
+            lw      t0, 4*{xlenb}(sp)
+            lw      t1, 5*{xlenb}(sp)
+            lw      t2, 6*{xlenb}(sp)
+            lw      s0, 7*{xlenb}(sp)
+            lw      s1, 8*{xlenb}(sp)
+            lw      a0, 9*{xlenb}(sp)
+            lw      a1, 10*{xlenb}(sp)
+            lw      a2, 11*{xlenb}(sp)
+            lw      a3, 12*{xlenb}(sp)
+            lw      a4, 13*{xlenb}(sp)
+            lw      a5, 14*{xlenb}(sp)
+            lw      a6, 15*{xlenb}(sp)
+            lw      a7, 16*{xlenb}(sp)
+            lw      s2, 17*{xlenb}(sp)
+            lw      s3, 18*{xlenb}(sp)
+            lw      s4, 19*{xlenb}(sp)
+            lw      s5, 20*{xlenb}(sp)
+            lw      s6, 21*{xlenb}(sp)
+            lw      s7, 22*{xlenb}(sp)
+            lw      s8, 23*{xlenb}(sp)
+            lw      s9, 24*{xlenb}(sp)
+            lw      s10, 25*{xlenb}(sp)
+            lw      s11, 26*{xlenb}(sp)
+            lw      t3, 27*{xlenb}(sp)
+            lw      t4, 28*{xlenb}(sp)
+            lw      t5, 29*{xlenb}(sp)
+            lw      t6, 30*{xlenb}(sp)
+            lw      sp, 1*{xlenb}(sp)
+            sret"
+            ,
+            tf = in(reg) self,
+            kernel_tp_addr = in(reg) kernel_tp_addr,
+            xlenb = const 4,
+            options(noreturn),
+        );
     }
 }
 
@@ -162,40 +235,72 @@ impl TaskContext {
 
 #[unsafe(naked)]
 unsafe extern "C" fn context_switch(_current_task: &mut TaskContext, _next_task: &TaskContext) {
+    #[cfg(target_arch = "riscv64")]
     naked_asm!(
         "
-        // save old context (callee-saved registers)
-        STR     ra, a0, 0
-        STR     sp, a0, 1
-        STR     s0, a0, 2
-        STR     s1, a0, 3
-        STR     s2, a0, 4
-        STR     s3, a0, 5
-        STR     s4, a0, 6
-        STR     s5, a0, 7
-        STR     s6, a0, 8
-        STR     s7, a0, 9
-        STR     s8, a0, 10
-        STR     s9, a0, 11
-        STR     s10, a0, 12
-        STR     s11, a0, 13
-
-        // restore new context
-        LDR     s11, a1, 13
-        LDR     s10, a1, 12
-        LDR     s9, a1, 11
-        LDR     s8, a1, 10
-        LDR     s7, a1, 9
-        LDR     s6, a1, 8
-        LDR     s5, a1, 7
-        LDR     s4, a1, 6
-        LDR     s3, a1, 5
-        LDR     s2, a1, 4
-        LDR     s1, a1, 3
-        LDR     s0, a1, 2
-        LDR     sp, a1, 1
-        LDR     ra, a1, 0
-
+        sd      ra, 0*{xlenb}(a0)
+        sd      sp, 1*{xlenb}(a0)
+        sd      s0, 2*{xlenb}(a0)
+        sd      s1, 3*{xlenb}(a0)
+        sd      s2, 4*{xlenb}(a0)
+        sd      s3, 5*{xlenb}(a0)
+        sd      s4, 6*{xlenb}(a0)
+        sd      s5, 7*{xlenb}(a0)
+        sd      s6, 8*{xlenb}(a0)
+        sd      s7, 9*{xlenb}(a0)
+        sd      s8, 10*{xlenb}(a0)
+        sd      s9, 11*{xlenb}(a0)
+        sd      s10, 12*{xlenb}(a0)
+        sd      s11, 13*{xlenb}(a0)
+        ld      s11, 13*{xlenb}(a1)
+        ld      s10, 12*{xlenb}(a1)
+        ld      s9, 11*{xlenb}(a1)
+        ld      s8, 10*{xlenb}(a1)
+        ld      s7, 9*{xlenb}(a1)
+        ld      s6, 8*{xlenb}(a1)
+        ld      s5, 7*{xlenb}(a1)
+        ld      s4, 6*{xlenb}(a1)
+        ld      s3, 5*{xlenb}(a1)
+        ld      s2, 4*{xlenb}(a1)
+        ld      s1, 3*{xlenb}(a1)
+        ld      s0, 2*{xlenb}(a1)
+        ld      sp, 1*{xlenb}(a1)
+        ld      ra, 0*{xlenb}(a1)
         ret",
-    )
+        xlenb = const 8,
+    );
+    #[cfg(target_arch = "riscv32")]
+    naked_asm!(
+        "
+        sw      ra, 0*{xlenb}(a0)
+        sw      sp, 1*{xlenb}(a0)
+        sw      s0, 2*{xlenb}(a0)
+        sw      s1, 3*{xlenb}(a0)
+        sw      s2, 4*{xlenb}(a0)
+        sw      s3, 5*{xlenb}(a0)
+        sw      s4, 6*{xlenb}(a0)
+        sw      s5, 7*{xlenb}(a0)
+        sw      s6, 8*{xlenb}(a0)
+        sw      s7, 9*{xlenb}(a0)
+        sw      s8, 10*{xlenb}(a0)
+        sw      s9, 11*{xlenb}(a0)
+        sw      s10, 12*{xlenb}(a0)
+        sw      s11, 13*{xlenb}(a0)
+        lw      s11, 13*{xlenb}(a1)
+        lw      s10, 12*{xlenb}(a1)
+        lw      s9, 11*{xlenb}(a1)
+        lw      s8, 10*{xlenb}(a1)
+        lw      s7, 9*{xlenb}(a1)
+        lw      s6, 8*{xlenb}(a1)
+        lw      s5, 7*{xlenb}(a1)
+        lw      s4, 6*{xlenb}(a1)
+        lw      s3, 5*{xlenb}(a1)
+        lw      s2, 4*{xlenb}(a1)
+        lw      s1, 3*{xlenb}(a1)
+        lw      s0, 2*{xlenb}(a1)
+        lw      sp, 1*{xlenb}(a1)
+        lw      ra, 0*{xlenb}(a1)
+        ret",
+        xlenb = const 4,
+    );
 }
