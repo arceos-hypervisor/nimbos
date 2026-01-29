@@ -71,7 +71,7 @@ jobs:
       run: |
         export PATH=$PATH:$PWD/musl/bin
         cd user && make ARCH=${{ matrix.arch }} build
-        cd ../kernel && make build ARCH=${{ matrix.arch }} USER_ENTRY=${{ env.USER_ENTRY }} GICV3=${{ env.GICV3 }}
+        cd ../kernel && make build ARCH=${{ matrix.arch }} USER_ENTRY=${{ env.USER_ENTRY }} GICV3=${{ env.GICV3 }} GUEST=on
         cd ..
     - name: Archive
       run: zip -j -r ${{ env.ZIP_NAME }} kernel/target/${{ matrix.arch }}/release/nimbos.bin

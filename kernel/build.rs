@@ -13,6 +13,8 @@ fn main() {
         "pc"
     } else if cfg!(feature = "platform-pc-rvm") {
         "pc-rvm"
+    } else if cfg!(feature = "platform-qemu-guest-riscv") {
+        "qemu-guest-riscv"
     } else if cfg!(feature = "platform-qemu-virt-arm") {
         "qemu-virt-arm"
     } else if cfg!(feature = "platform-qemu-virt-riscv") {

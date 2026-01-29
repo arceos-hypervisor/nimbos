@@ -10,6 +10,7 @@ edition = "2021"
 rvm = []
 platform-pc = []
 platform-pc-rvm = []
+platform-qemu-guest-riscv = []
 platform-qemu-virt-arm = []
 platform-qemu-virt-riscv = []
 platform-rvm-guest-x86_64 = []

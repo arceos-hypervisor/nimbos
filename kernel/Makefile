@@ -29,7 +29,11 @@ else ifeq ($(ARCH), aarch64)
   PLATFORM ?= qemu-virt-arm
 else ifeq ($(ARCH), riscv64)
   ACCEL ?= off
-  PLATFORM ?= qemu-virt-riscv
+  ifeq ($(GUEST), on)
+    PLATFORM ?= qemu-guest-riscv # Nested Guest on QEMU
+  else
+    PLATFORM ?= qemu-virt-riscv
+  endif
 endif
 
 export ARCH
