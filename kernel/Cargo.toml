@@ -28,17 +28,17 @@ memoffset = { version = "0.9", features = ["unstable_const"] }
 buddy_system_allocator = { version = "0.12", default-features = false }
 
 [target.'cfg(target_arch = "x86_64")'.dependencies]
-x86 = "0.47"
-x86_64 = "0.14"
-x2apic = "0.4"
+x86 = "0.52"
+x86_64 = "0.15"
+x2apic = "0.5"
 raw-cpuid = "11.6"
 
 [target.'cfg(target_arch = "aarch64")'.dependencies]
 cortex-a = "8.1"
 
 [target.'cfg(any(target_arch = "riscv32", target_arch = "riscv64"))'.dependencies]
-riscv = "0.8"
+riscv = "0.16"
 
 [build-dependencies]
-toml = "0.5"
+toml = "0.9"
 serde = "1.0"

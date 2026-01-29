@@ -27,7 +27,7 @@ fn calibrate_lapic_timer() {
     let lapic = local_apic();
     unsafe {
         lapic.set_timer_mode(TimerMode::OneShot);
-        lapic.set_timer_divide(TimerDivide::Div256); // divide 1
+        lapic.set_timer_divide(TimerDivide::Div1); // divide 1
     }
 
     let mut best_freq_hz = 0;

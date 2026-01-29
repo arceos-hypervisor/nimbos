@@ -7,7 +7,10 @@ pub struct PerCpuData<T> {
     data: UnsafeCell<T>,
 }
 
-unsafe impl<T: Send> Sync for PerCpuData<T> {}
+// As SMP is not implemented yet, we can use unbounded wild impl for now.
+// unsafe impl<T: Send> Sync for PerCpuData<T> {}
+unsafe impl<T> Sync for PerCpuData<T> {}
+unsafe impl<T> Send for PerCpuData<T> {}
 
 impl<T> PerCpuData<T> {
     pub const fn new(data: T) -> Self {

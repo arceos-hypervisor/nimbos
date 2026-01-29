@@ -46,7 +46,7 @@ pub unsafe fn set_user_page_table_root(root_paddr: usize) {
 
 #[inline]
 pub fn flush_tlb_all() {
-    unsafe { riscv::asm::sfence_vma_all() }
+    riscv::asm::sfence_vma_all()
 }
 
 #[inline]
@@ -57,5 +57,5 @@ pub fn flush_icache_all() {
 #[inline]
 #[allow(dead_code)]
 pub fn wait_for_ints() {
-    unsafe { riscv::asm::wfi() }
+    riscv::asm::wfi()
 }
