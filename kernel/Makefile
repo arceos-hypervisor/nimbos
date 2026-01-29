@@ -5,6 +5,14 @@ LOG ?= warn
 RVM ?= off
 GUEST ?= off
 USER_ENTRY ?= user_shell
+GICV3 ?= off
+
+# GICV3 is only valid for aarch64
+ifneq ($(ARCH), aarch64)
+  ifeq ($(GICV3), on)
+    $(error GICV3 is only supported for ARCH=aarch64. Current ARCH is $(ARCH))
+  endif
+endif
 
 # Platform
 ifeq ($(ARCH), x86_64)
@@ -30,7 +38,7 @@ export MODE
 export LOG
 export USER_ENTRY
 
-make_args := ARCH=$(ARCH) PLATFORM=$(PLATFORM) MODE=$(MODE) LOG=$(LOG)
+make_args := ARCH=$(ARCH) PLATFORM=$(PLATFORM) MODE=$(MODE) LOG=$(LOG) GICV3=$(GICV3)
 
 # Paths
 target := ../targets/$(ARCH).json
@@ -42,6 +50,12 @@ features := platform-$(PLATFORM)
 
 ifeq ($(RVM), on)
   features += rvm
+endif
+
+ifeq ($(ARCH), aarch64)
+  ifeq ($(GICV3), on)
+    features += gicv3
+  endif
 endif
 
 build_args := --no-default-features --features "$(features)" --target $(target) -Zbuild-std=core,alloc -Zbuild-std-features=compiler-builtins-mem
@@ -72,9 +86,10 @@ ifeq ($(ARCH), x86_64)
     -serial mon:stdio \
     -kernel $(kernel_elf)
 else ifeq ($(ARCH), aarch64)
+  gic_version := $(if $(filter on,$(GICV3)),3,2)
   qemu_args += \
     -cpu cortex-a72 \
-    -machine virt,gic-version=3 \
+    -machine virt,gic-version=$(gic_version) \
     -kernel $(kernel_bin)
 else ifeq ($(ARCH), riscv64)
   qemu_args += \

@@ -279,7 +279,7 @@ impl Gic {
 
     fn init(&self) {
         let gicd = self.gicd();
-        let gicr = self.gicr();
+        // let gicr = self.gicr();
 
         if self.cpu_num() > 1 {
             for i in (SPI_BASE..self.max_irqs).step_by(4) {
