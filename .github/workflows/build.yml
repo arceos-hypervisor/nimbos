@@ -55,7 +55,13 @@ jobs:
         version: '9.2.3'
         arch_list: ${{ matrix.arch }}
     - name: Build kernel
-      run: make -C kernel build ARCH=${{ matrix.arch }}
+      run: make -C kernel build ARCH=${{ matrix.arch }} USER_ENTRY=usertests
+    - name: Enable KVM group perms
+      if: ${{ matrix.arch == 'x86_64' }}
+      run: |
+        echo 'KERNEL=="kvm", GROUP="kvm", MODE="0666", OPTIONS+="static_node=kvm"' | sudo tee /etc/udev/rules.d/99-kvm4all.rules
+        sudo udevadm control --reload-rules
+        sudo udevadm trigger --name-match=kvm
     - name: Run QEMU
       run: make -C kernel run ARCH=${{ matrix.arch }} USER_ENTRY=usertests
 
