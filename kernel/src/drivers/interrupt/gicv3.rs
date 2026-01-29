@@ -257,7 +257,7 @@ impl Gic {
         while gicr.WAKER.get() & 0x4 != 0 {
             // Wait for the `ChildrenAsleep` bit to be cleared
         }
-        
+
         gicr.ICENABLER0.set(u32::MAX); // Disable all interrupts
         gicr.ICPENDR0.set(u32::MAX); // Clear all pending interrupts
         gicr.IGROUPR0.set(u32::MAX); // Set all interrupts to Group 1
