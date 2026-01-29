@@ -15,6 +15,7 @@ pub use uaccess::{UserInOutPtr, UserInPtr, UserOutPtr};
 pub const PAGE_SIZE: usize = 0x1000;
 
 bitflags::bitflags! {
+    #[derive(Debug, Clone, Copy, Eq, PartialEq)]
     pub struct MemFlags: usize {
         const READ          = 1 << 0;
         const WRITE         = 1 << 1;

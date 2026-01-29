@@ -5,6 +5,7 @@ use crate::mm::{MemFlags, PhysAddr, PAGE_SIZE};
 
 bitflags::bitflags! {
     /// Memory attribute fields in the VMSAv8-64 translation table format descriptors.
+    #[derive(Debug, Clone, Copy, Eq, PartialEq)]
     pub struct DescriptorAttr: u64 {
         // Attribute fields in stage 1 VMSAv8-64 Block and Page descriptors:
 

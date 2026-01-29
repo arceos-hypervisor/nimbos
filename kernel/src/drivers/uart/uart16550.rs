@@ -11,6 +11,7 @@ static COM1: Mutex<Uart16550> = Mutex::new(Uart16550::new(0x3f8));
 
 bitflags::bitflags! {
     /// Line status flags
+    #[derive(Debug, Clone, Copy, Eq, PartialEq)]
     struct LineStsFlags: u8 {
         const INPUT_FULL = 1;
         // 1 to 4 unknown

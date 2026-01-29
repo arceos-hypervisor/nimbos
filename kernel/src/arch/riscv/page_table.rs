@@ -5,6 +5,7 @@ use crate::mm::{MemFlags, PhysAddr, PAGE_SIZE};
 
 bitflags::bitflags! {
     /// Page-table entry flags.
+    #[derive(Debug, Clone, Copy, Eq, PartialEq)]
     pub struct PTEFlags: usize {
         /// Whether the PTE is valid.
         const V =   1 << 0;
