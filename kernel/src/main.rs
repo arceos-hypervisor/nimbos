@@ -1,9 +1,6 @@
 #![cfg_attr(not(test), no_std)]
 #![cfg_attr(not(test), no_main)]
-#![feature(asm_const, naked_functions)]
 #![feature(panic_info_message, alloc_error_handler)]
-#![feature(const_refs_to_cell)]
-#![feature(const_maybe_uninit_zeroed)]
 #![feature(get_mut_unchecked)]
 
 extern crate alloc;

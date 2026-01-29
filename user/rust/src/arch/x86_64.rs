@@ -1,4 +1,4 @@
-use core::arch::asm;
+use core::arch::{asm, naked_asm};
 
 use crate::syscall::{SYSCALL_CLONE, SYSCALL_EXIT};
 
@@ -18,7 +18,7 @@ pub fn syscall(id: usize, args: [usize; 3]) -> isize {
     ret
 }
 
-#[naked]
+#[unsafe(naked)]
 #[allow(improper_ctypes_definitions)]
 pub extern "C" fn sys_clone(_entry: fn(usize) -> i32, _arg: usize, _newsp: usize) -> isize {
     // sys_clone(entry, arg, newsp)
@@ -26,7 +26,7 @@ pub extern "C" fn sys_clone(_entry: fn(usize) -> i32, _arg: usize, _newsp: usize
     // syscall(SYSCALL_CLONE, newsp)
     //                   rax,   rdi
     unsafe {
-        asm!("
+        naked_asm!("
             // push arg (rsi) to stack, set func (rdi) to r9
             and rdx, -16
             sub rdx, 8
@@ -53,7 +53,6 @@ pub extern "C" fn sys_clone(_entry: fn(usize) -> i32, _arg: usize, _newsp: usize
             syscall",
             sys_clone = const SYSCALL_CLONE,
             sys_exit = const SYSCALL_EXIT,
-            options(noreturn),
         )
     }
 }

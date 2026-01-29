@@ -1,4 +1,4 @@
-use core::arch::asm;
+use core::arch::{asm, naked_asm};
 
 use x86_64::registers::rflags::RFlags;
 
@@ -173,9 +173,9 @@ impl TaskContext {
     }
 }
 
-#[naked]
+#[unsafe(naked)]
 unsafe extern "C" fn context_switch(_current_stack: &mut u64, _next_stack: &u64) {
-    asm!(
+    naked_asm!(
         "
         push    rbp
         push    rbx
@@ -193,6 +193,5 @@ unsafe extern "C" fn context_switch(_current_stack: &mut u64, _next_stack: &u64)
         pop     rbx
         pop     rbp
         ret",
-        options(noreturn),
     )
 }

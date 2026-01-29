@@ -23,7 +23,7 @@ pub fn init() {
     manager::init();
 
     ROOT_TASK.init_by(Task::new_kernel(
-        |_| loop {
+        |_| {
             let curr_task = current();
             while curr_task.waitpid(-1, 0).is_some() {}
             // instructions::wait_for_ints();
