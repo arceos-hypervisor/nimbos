@@ -1,6 +1,6 @@
 #![cfg_attr(not(test), no_std)]
 #![cfg_attr(not(test), no_main)]
-#![feature(panic_info_message, alloc_error_handler)]
+#![feature(alloc_error_handler)]
 #![feature(get_mut_unchecked)]
 
 extern crate alloc;
@@ -34,8 +34,11 @@ fn clear_bss() {
         fn ebss();
     }
     unsafe {
-        core::slice::from_raw_parts_mut(sbss as usize as *mut u8, ebss as usize - sbss as usize)
-            .fill(0);
+        core::slice::from_raw_parts_mut(
+            sbss as *const () as usize as *mut u8,
+            ebss as *const () as usize - sbss as *const () as usize,
+        )
+        .fill(0);
     }
 }
 

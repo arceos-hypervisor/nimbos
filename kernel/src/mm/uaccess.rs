@@ -73,7 +73,7 @@ impl<T, P: Policy> fmt::Debug for UserPtr<T, P> {
 
 impl<T, P: Policy> From<usize> for UserPtr<T, P> {
     fn from(user_vadddr: usize) -> Self {
-        assert!(user_vadddr % align_of::<T>() == 0);
+        assert!(user_vadddr.is_multiple_of(align_of::<T>()));
         Self {
             ptr: user_vadddr as *mut T,
             _phantom: PhantomData,

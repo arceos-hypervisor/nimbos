@@ -138,7 +138,7 @@ impl Task {
             arg,
         };
         t.ctx.get_mut().init(
-            task_entry as _,
+            task_entry as *const () as _,
             t.kstack.top(),
             kernel_aspace().page_table_root(),
             true,
@@ -158,9 +158,12 @@ impl Task {
 
         let mut t = Self::new_common(TaskId::alloc());
         t.entry = EntryState::User(Box::new(TrapFrame::new_user(entry, ustack_top, 0)));
-        t.ctx
-            .get_mut()
-            .init(task_entry as _, t.kstack.top(), vm.page_table_root(), false);
+        t.ctx.get_mut().init(
+            task_entry as *const () as _,
+            t.kstack.top(),
+            vm.page_table_root(),
+            false,
+        );
         t.vm = Some(Arc::new(Mutex::new(vm)));
 
         let t = Arc::new(t);
@@ -175,7 +178,7 @@ impl Task {
         let vm = self.vm.as_ref().unwrap().clone();
         t.entry = EntryState::User(Box::new(tf.new_clone(VirtAddr::new(newsp))));
         t.ctx.get_mut().init(
-            task_entry as _,
+            task_entry as *const () as _,
             t.kstack.top(),
             vm.lock().page_table_root(),
             false,
@@ -192,9 +195,12 @@ impl Task {
         let mut t = Self::new_common(TaskId::alloc());
         let vm = self.vm.as_ref().unwrap().lock().dup();
         t.entry = EntryState::User(Box::new(tf.new_fork()));
-        t.ctx
-            .get_mut()
-            .init(task_entry as _, t.kstack.top(), vm.page_table_root(), false);
+        t.ctx.get_mut().init(
+            task_entry as *const () as _,
+            t.kstack.top(),
+            vm.page_table_root(),
+            false,
+        );
         t.vm = Some(Arc::new(Mutex::new(vm)));
 
         let t = Arc::new(t);

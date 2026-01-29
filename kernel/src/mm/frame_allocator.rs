@@ -57,7 +57,7 @@ pub fn init_frame_allocator() {
     extern "C" {
         fn ekernel();
     }
-    let start_paddr = PhysAddr::new(virt_to_phys(ekernel as usize)).align_up();
+    let start_paddr = PhysAddr::new(virt_to_phys(ekernel as *const () as usize)).align_up();
     let end_paddr = PhysAddr::new(PHYS_MEMORY_END).align_down();
     println!(
         "Initializing frame allocator at: [{:#x?}, {:#x?})",

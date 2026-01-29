@@ -140,7 +140,7 @@ impl TaskManager {
 
     #[allow(dead_code)]
     pub fn dump_all_tasks(&self) {
-        if ROOT_TASK.children.lock().len() == 0 {
+        if ROOT_TASK.children.lock().is_empty() {
             return;
         }
         println!(

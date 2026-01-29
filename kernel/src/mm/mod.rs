@@ -23,6 +23,22 @@ bitflags::bitflags! {
     }
 }
 
+impl From<xmas_elf::program::Flags> for MemFlags {
+    fn from(f: xmas_elf::program::Flags) -> Self {
+        let mut ret = MemFlags::USER;
+        if f.is_read() {
+            ret |= MemFlags::READ;
+        }
+        if f.is_write() {
+            ret |= MemFlags::WRITE;
+        }
+        if f.is_execute() {
+            ret |= MemFlags::EXECUTE;
+        }
+        ret
+    }
+}
+
 pub fn init_heap_early() {
     heap_allocator::init_heap();
 }

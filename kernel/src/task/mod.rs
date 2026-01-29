@@ -51,7 +51,7 @@ pub fn init() {
     const USER_ENTRY: &str = {
         match core::option_env!("USER_ENTRY") {
             Some(s) => s,
-            None => panic!("USER_ENTRY is not defined, please set it in environment variables, or specify it when executing `make`."),
+            None => "user_shell",
         }
     };
     m.spawn(Task::new_user(USER_ENTRY));

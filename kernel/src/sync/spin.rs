@@ -72,7 +72,7 @@ impl<T> SpinNoIrqLock<T> {
         self.lock.store(false, Ordering::Release);
     }
 
-    pub fn lock(&self) -> SpinNoIrqLockGuard<T> {
+    pub fn lock(&self) -> SpinNoIrqLockGuard<'_, T> {
         let irq_enabled_before = spin_lock_irqsave(&self.lock);
         SpinNoIrqLockGuard {
             irq_enabled_before,
@@ -81,7 +81,7 @@ impl<T> SpinNoIrqLock<T> {
         }
     }
 
-    pub fn try_lock(&self) -> Option<SpinNoIrqLockGuard<T>> {
+    pub fn try_lock(&self) -> Option<SpinNoIrqLockGuard<'_, T>> {
         spin_trylock_irqsave(&self.lock).map(|irq_enabled_before| SpinNoIrqLockGuard {
             irq_enabled_before,
             lock: &self.lock,
