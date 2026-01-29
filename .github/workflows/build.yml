@@ -17,7 +17,7 @@ jobs:
     - uses: actions-rs/toolchain@v1
       with:
         profile: minimal
-        toolchain: nightly-2022-11-03
+        toolchain: nightly-2025-12-12
         override: true
         components: rust-src, clippy, rustfmt
     - name: Clippy kernel
@@ -51,7 +51,7 @@ jobs:
     - uses: actions-rs/toolchain@v1
       with:
         profile: minimal
-        toolchain: nightly-2022-02-22
+        toolchain: nightly-2025-12-12
         components: rust-src, llvm-tools-preview
     - name: Setup environment
       run: make -C kernel env ARCH=${{ matrix.arch }}
