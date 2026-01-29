@@ -30,12 +30,22 @@ jobs:
       run: cargo fmt --all --manifest-path=user/rust/Cargo.toml -- --check
 
   build:
-    runs-on: ${{ matrix.os }}
+    runs-on: ubuntu-latest
     strategy:
       fail-fast: false
       matrix:
-        os: [ubuntu-latest]
         arch: [x86_64, aarch64, riscv64]
+        usertests: [false, true]
+        gicv3: [false, true]
+        exclude:
+          - arch: x86_64
+            gicv3: true
+          - arch: riscv64
+            gicv3: true
+    env:
+      ZIP_NAME: ${{ matrix.arch }}${{ matrix.usertests && '_usertests' || '' }}${{ matrix.gicv3 && '_gicv3' || '' }}.zip
+      USER_ENTRY: ${{ matrix.usertests && 'usertests' || 'user_shell' }}
+      GICV3: ${{ matrix.gicv3 && 'on' || 'off' }}
     steps:
     - uses: actions/checkout@v2
     - uses: actions-rs/toolchain@v1
@@ -45,7 +55,6 @@ jobs:
         components: rust-src, llvm-tools-preview
     - name: Setup environment
       run: make -C kernel env ARCH=${{ matrix.arch }}
-
     - name: Install musl toolchain
       run: |
         if [ "${{ matrix.arch }}" = "x86_64" ]; then
@@ -58,29 +67,16 @@ jobs:
         wget https://musl.cc/$MUSL_PATH.tgz
         tar -xf $MUSL_PATH.tgz
         mv $MUSL_PATH musl
-
-    - name: Build kernel
+    - name: Build user and kernel
       run: |
         export PATH=$PATH:$PWD/musl/bin
         cd user && make ARCH=${{ matrix.arch }} build
-        cd ../kernel && make build ARCH=${{ matrix.arch }} && cd ..
-    
+        cd ../kernel && make build ARCH=${{ matrix.arch }} USER_ENTRY=${{ env.USER_ENTRY }} GICV3=${{ env.GICV3 }}
+        cd ..
     - name: Archive
-      run: | 
-        zip -j -r ${{ matrix.arch }}.zip kernel/target/${{ matrix.arch }}/release/nimbos.bin
-    
-    - name: Build kernel for usertests
-      run: |
-        cd kernel && make build ARCH=${{ matrix.arch }} USER_ENTRY=usertests && cd ..
-    
-    - name: Archive usertests
-      run: | 
-        zip -j -r ${{ matrix.arch }}_usertests.zip kernel/target/${{ matrix.arch }}/release/nimbos.bin
-
+      run: zip -j -r ${{ env.ZIP_NAME }} kernel/target/${{ matrix.arch }}/release/nimbos.bin
     - name: Release
       uses: softprops/action-gh-release@v2
       if: startsWith(github.ref, 'refs/tags/')
       with:
-        files: |
-          ${{ matrix.arch }}.zip
-          ${{ matrix.arch }}_usertests.zip
+        files: ${{ env.ZIP_NAME }}
