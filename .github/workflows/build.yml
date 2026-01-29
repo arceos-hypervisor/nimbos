@@ -57,7 +57,7 @@ jobs:
     - name: Build kernel
       run: make -C kernel build ARCH=${{ matrix.arch }}
     - name: Run QEMU
-      run: make -C kernel run ARCH=${{ matrix.arch }}
+      run: make -C kernel run ARCH=${{ matrix.arch }} USER_ENTRY=usertests
 
   build:
     runs-on: ubuntu-latest
