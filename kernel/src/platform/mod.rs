@@ -1,3 +1,5 @@
+#![allow(unused_imports)]
+
 cfg_if! {
     if #[cfg(any(feature = "platform-pc", feature = "platform-pc-rvm", feature = "platform-rvm-guest-x86_64"))] {
         mod pc;

@@ -9,6 +9,7 @@ pub mod paging;
 pub use address::{PhysAddr, VirtAddr};
 pub use frame_allocator::PhysFrame;
 pub use memory_set::{kernel_aspace, MapArea, MemorySet};
+#[allow(unused_imports)]
 pub use uaccess::{UserInOutPtr, UserInPtr, UserOutPtr};
 
 pub const PAGE_SIZE: usize = 0x1000;

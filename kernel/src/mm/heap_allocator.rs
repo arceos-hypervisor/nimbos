@@ -39,11 +39,11 @@ pub fn handle_alloc_error(layout: Layout) -> ! {
     panic!("Heap allocation error, layout = {:?}", layout);
 }
 
-static mut HEAP_SPACE: [u64; KERNEL_HEAP_SIZE / size_of::<u64>()] =
+static HEAP_SPACE: [u64; KERNEL_HEAP_SIZE / size_of::<u64>()] =
     [0; KERNEL_HEAP_SIZE / size_of::<u64>()];
 
 pub fn init_heap() {
-    let heap_start = unsafe { HEAP_SPACE.as_ptr() as usize };
+    let heap_start = HEAP_SPACE.as_ptr() as usize;
     println!(
         "Initializing kernel heap at: [{:#x}, {:#x})",
         heap_start,

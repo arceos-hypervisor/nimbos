@@ -7,7 +7,11 @@ pub trait PageTableLevels: Sync + Send {
     const LEVELS: usize;
 }
 
+// One of these two structs will be used to represent the page table levels.
+// We allow the other one to be unused to avoid linter errors.
+#[allow(dead_code)]
 pub struct PageTableLevels3;
+#[allow(dead_code)]
 pub struct PageTableLevels4;
 
 impl PageTableLevels for PageTableLevels3 {

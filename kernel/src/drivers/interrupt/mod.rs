@@ -8,6 +8,7 @@ cfg_if! {
         mod i8259_pic;
         use apic as imp;
         pub use apic::local_apic;
+        #[allow(unused_imports)]
         pub use apic::vectors::*;
     } else if #[cfg(target_arch = "aarch64")] {
         #[cfg(not(feature = "gicv3"))]

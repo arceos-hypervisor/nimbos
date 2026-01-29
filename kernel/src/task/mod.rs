@@ -3,6 +3,7 @@ mod schedule;
 mod structs;
 mod wait_queue;
 
+#[allow(unused_imports)]
 pub use structs::{CurrentTask, Task, TaskId};
 
 use alloc::sync::Arc;
