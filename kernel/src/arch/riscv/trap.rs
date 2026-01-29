@@ -15,7 +15,7 @@ pub fn init() {
     extern "C" {
         fn trap_vector_base();
     }
-    unsafe { stvec::write(trap_vector_base as usize, TrapMode::Direct) };
+    unsafe { stvec::write(trap_vector_base as *const () as usize, TrapMode::Direct) };
 }
 
 #[no_mangle]

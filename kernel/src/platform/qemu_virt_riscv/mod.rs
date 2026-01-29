@@ -29,13 +29,13 @@ unsafe fn init_mmu() {
     riscv::asm::sfence_vma_all();
 }
 
-#[naked]
+#[unsafe(naked)]
 #[no_mangle]
 #[link_section = ".text.boot"]
 unsafe extern "C" fn _start() -> ! {
     // PC = 0x8020_0000
     // a0 = hartid
-    core::arch::asm!("
+    core::arch::naked_asm!("
         mv      s0, a0                  // 0. save hartid
 
         la      sp, {boot_stack}        // 1. set SP
@@ -57,6 +57,5 @@ unsafe extern "C" fn _start() -> ! {
         boot_stack = sym BOOT_STACK,
         init_mmu = sym init_mmu,
         rust_main = sym crate::rust_main,
-        options(noreturn),
     )
 }
