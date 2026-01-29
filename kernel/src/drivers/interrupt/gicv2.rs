@@ -55,6 +55,7 @@ register_structs! {
         (0x0d00 => _reserved_1),
         /// Software Generated Interrupt Register.
         (0x0f00 => SGIR: WriteOnly<u32>),
+        (0x0f04 => _reserved_2),
         (0x1000 => @END),
     }
 }
@@ -82,6 +83,7 @@ register_structs! {
         (0x0100 => _reserved_2),
         /// Deactivate Interrupt Register.
         (0x1000 => DIR: WriteOnly<u32>),
+        (0x1004 => _reserved_3),
         (0x2000 => @END),
     }
 }
