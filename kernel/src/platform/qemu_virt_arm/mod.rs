@@ -107,12 +107,12 @@ unsafe fn init_boot_page_table() {
     );
 }
 
-#[naked]
+#[unsafe(naked)]
 #[no_mangle]
 #[link_section = ".text.boot"]
 unsafe extern "C" fn _start() -> ! {
     // PC = 0x4008_0000
-    core::arch::asm!("
+    core::arch::naked_asm!("
         adrp    x8, boot_stack_top
         mov     sp, x8
         bl      {switch_to_el1}
@@ -127,6 +127,5 @@ unsafe extern "C" fn _start() -> ! {
         init_boot_page_table = sym init_boot_page_table,
         init_mmu = sym init_mmu,
         rust_main = sym crate::rust_main,
-        options(noreturn),
     )
 }
