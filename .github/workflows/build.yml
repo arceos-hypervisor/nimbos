@@ -60,6 +60,7 @@ jobs:
       run: make -C kernel run ARCH=${{ matrix.arch }} USER_ENTRY=usertests
 
   build:
+    name: "build for ${{ matrix.arch }} (entry: ${{ matrix.usertests && 'usertests' || 'user_shell' }}${{ matrix.gicv3 && ', gicv3' || '' }})"
     runs-on: ubuntu-latest
     strategy:
       fail-fast: false
