@@ -17,7 +17,7 @@ jobs:
     - uses: actions-rs/toolchain@v1
       with:
         profile: minimal
-        toolchain: nightly-2022-11-03
+        toolchain: nightly-2025-12-12
         override: true
         components: rust-src, clippy, rustfmt
     - name: Clippy kernel
@@ -29,58 +29,85 @@ jobs:
     - name: Check code format in user
       run: cargo fmt --all --manifest-path=user/rust/Cargo.toml -- --check
 
-  build:
-    runs-on: ${{ matrix.os }}
+  qemu:
+    runs-on: ubuntu-latest
     strategy:
       fail-fast: false
       matrix:
-        os: [ubuntu-latest]
         arch: [x86_64, aarch64, riscv64]
     steps:
     - uses: actions/checkout@v2
     - uses: actions-rs/toolchain@v1
       with:
         profile: minimal
-        toolchain: nightly-2022-02-22
+        toolchain: nightly-2025-12-12
+        override: true
         components: rust-src, llvm-tools-preview
     - name: Setup environment
       run: make -C kernel env ARCH=${{ matrix.arch }}
-
     - name: Install musl toolchain
-      run: |
-        if [ "${{ matrix.arch }}" = "x86_64" ]; then
-          export MUSL_PATH="x86_64-linux-musl-cross"
-        elif [ "${{ matrix.arch }}" = "aarch64" ]; then
-          export MUSL_PATH="aarch64-linux-musl-cross"
-        elif [ "${{ matrix.arch }}" = "riscv64" ]; then
-          export MUSL_PATH="riscv64-linux-musl-cross"
-        fi
-        wget https://musl.cc/$MUSL_PATH.tgz
-        tar -xf $MUSL_PATH.tgz
-        mv $MUSL_PATH musl
-
+      uses: arceos-org/setup-musl@v1.0.2
+      with:
+        arch: ${{ matrix.arch }}
+    - name: Install QEMU
+      uses: arceos-org/setup-qemu@v1.0.2
+      with:
+        version: '9.2.3'
+        arch_list: ${{ matrix.arch }}
+    - name: Build user
+      run: make -C user build ARCH=${{ matrix.arch }}
     - name: Build kernel
+      run: make -C kernel build ARCH=${{ matrix.arch }} USER_ENTRY=usertests
+    - name: Enable KVM group perms
+      if: ${{ matrix.arch == 'x86_64' }}
+      run: |
+        echo 'KERNEL=="kvm", GROUP="kvm", MODE="0666", OPTIONS+="static_node=kvm"' | sudo tee /etc/udev/rules.d/99-kvm4all.rules
+        sudo udevadm control --reload-rules
+        sudo udevadm trigger --name-match=kvm
+    - name: Run QEMU
+      run: make -C kernel run ARCH=${{ matrix.arch }} USER_ENTRY=usertests
+
+  build:
+    name: "build for ${{ matrix.arch }} (entry: ${{ matrix.usertests && 'usertests' || 'user_shell' }}${{ matrix.gicv3 && ', gicv3' || '' }})"
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        arch: [x86_64, aarch64, riscv64]
+        usertests: [false, true]
+        gicv3: [false, true]
+        exclude:
+          - arch: x86_64
+            gicv3: true
+          - arch: riscv64
+            gicv3: true
+    env:
+      ZIP_NAME: ${{ matrix.arch }}${{ matrix.usertests && '_usertests' || '' }}${{ matrix.gicv3 && '_gicv3' || '' }}.zip
+      USER_ENTRY: ${{ matrix.usertests && 'usertests' || 'user_shell' }}
+      GICV3: ${{ matrix.gicv3 && 'on' || 'off' }}
+    steps:
+    - uses: actions/checkout@v2
+    - uses: actions-rs/toolchain@v1
+      with:
+        profile: minimal
+        toolchain: nightly-2025-12-12
+        components: rust-src, llvm-tools-preview
+    - name: Setup environment
+      run: make -C kernel env ARCH=${{ matrix.arch }}
+    - name: Install musl toolchain
+      uses: arceos-org/setup-musl@v1.0.2
+      with:
+        arch: ${{ matrix.arch }}
+    - name: Build user and kernel
       run: |
         export PATH=$PATH:$PWD/musl/bin
         cd user && make ARCH=${{ matrix.arch }} build
-        cd ../kernel && make build ARCH=${{ matrix.arch }} && cd ..
-    
+        cd ../kernel && make build ARCH=${{ matrix.arch }} USER_ENTRY=${{ env.USER_ENTRY }} GICV3=${{ env.GICV3 }} GUEST=on
+        cd ..
     - name: Archive
-      run: | 
-        zip -j -r ${{ matrix.arch }}.zip kernel/target/${{ matrix.arch }}/release/nimbos.bin
-    
-    - name: Build kernel for usertests
-      run: |
-        cd kernel && make build ARCH=${{ matrix.arch }} USER_ENTRY=usertests && cd ..
-    
-    - name: Archive usertests
-      run: | 
-        zip -j -r ${{ matrix.arch }}_usertests.zip kernel/target/${{ matrix.arch }}/release/nimbos.bin
-
+      run: zip -j -r ${{ env.ZIP_NAME }} kernel/target/${{ matrix.arch }}/release/nimbos.bin
     - name: Release
       uses: softprops/action-gh-release@v2
       if: startsWith(github.ref, 'refs/tags/')
       with:
-        files: |
-          ${{ matrix.arch }}.zip
-          ${{ matrix.arch }}_usertests.zip
+        files: ${{ env.ZIP_NAME }}

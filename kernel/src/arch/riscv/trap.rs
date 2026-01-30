@@ -1,4 +1,5 @@
-use riscv::register::scause::{self, Exception as E, Trap};
+use riscv::interrupt::{Exception as E, Interrupt as I};
+use riscv::register::scause::{self, Trap};
 use riscv::register::{mtvec::TrapMode, stval, stvec};
 
 use super::TrapFrame;
@@ -15,14 +16,18 @@ pub fn init() {
     extern "C" {
         fn trap_vector_base();
     }
-    unsafe { stvec::write(trap_vector_base as usize, TrapMode::Direct) };
+    let stvec_val = stvec::Stvec::new(trap_vector_base as *const () as usize, TrapMode::Direct);
+    unsafe { stvec::write(stvec_val) };
 }
 
 #[no_mangle]
 fn riscv_trap_handler(tf: &mut TrapFrame, from_user: bool) {
     let scause = scause::read();
     trace!("trap {:?} @ {:#x}: {:#x?}", scause.cause(), tf.sepc, tf);
-    match scause.cause() {
+    let trap: Trap<I, E> = scause.cause().try_into().unwrap_or_else(|_| {
+        panic!("Invalid trap cause: {:#x}", scause.bits());
+    });
+    match trap {
         Trap::Exception(E::UserEnvCall) => {
             tf.sepc += 4;
             tf.regs.a0 = syscall(tf, tf.regs.a7, tf.regs.a0, tf.regs.a1, tf.regs.a2) as _;

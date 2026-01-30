@@ -43,7 +43,7 @@ static mut HEAP_SPACE: [u64; KERNEL_HEAP_SIZE / size_of::<u64>()] =
     [0; KERNEL_HEAP_SIZE / size_of::<u64>()];
 
 pub fn init_heap() {
-    let heap_start = unsafe { HEAP_SPACE.as_ptr() as usize };
+    let heap_start = unsafe { HEAP_SPACE.as_ptr() } as usize;
     println!(
         "Initializing kernel heap at: [{:#x}, {:#x})",
         heap_start,
@@ -60,7 +60,7 @@ pub fn heap_test() {
         fn sbss();
         fn ebss();
     }
-    let bss_range = sbss as usize..ebss as usize;
+    let bss_range = sbss as *const () as usize..ebss as *const () as usize;
     let a = Box::new(5);
     assert_eq!(*a, 5);
     assert!(bss_range.contains(&(a.as_ref() as *const _ as usize)));

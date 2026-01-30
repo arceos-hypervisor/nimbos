@@ -10,6 +10,7 @@ pub mod config;
 pub mod instructions;
 
 pub use self::context::{TaskContext, TrapFrame};
+#[allow(unused_imports)]
 pub use self::page_table::{PageTable, PageTableEntry};
 pub use self::percpu::ArchPerCpu;
 

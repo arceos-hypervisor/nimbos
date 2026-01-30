@@ -8,10 +8,10 @@ fn panic(info: &PanicInfo) -> ! {
             "Panicked at {}:{} {}",
             location.file(),
             location.line(),
-            info.message().unwrap()
+            info.message()
         );
     } else {
-        error!("Panicked: {}", info.message().unwrap());
+        error!("Panicked: {}", info.message());
     }
     if cfg!(feature = "rvm") {
         loop {}

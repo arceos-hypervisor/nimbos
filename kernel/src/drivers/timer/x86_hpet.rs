@@ -14,6 +14,7 @@ const HPET_BASE: PhysAddr = PhysAddr::new(0xFED0_0000);
 static HPET: LazyInit<Hpet> = LazyInit::new();
 
 bitflags! {
+    #[derive(Debug, Clone, Copy, Eq, PartialEq)]
     struct TimerConfCaps: u64 {
         /// 0 - this timer generates edge-triggered interrupts. 1 - this timer
         /// generates level-triggered interrupts.
@@ -49,6 +50,7 @@ register_structs! {
         (0x028 => _reserved_2),
         /// Main Counter Value Register.
         (0x0f0 => main_counter_value: ReadWrite<u64>),
+        (0x0f8 => _reserved_3),
         (0x100 => @END),
     }
 }
@@ -61,6 +63,7 @@ register_structs! {
         (0x8 => comparator_value: ReadWrite<u64>),
         /// Timer N FSB Interrupt Route Register.
         (0x10 => fsb_int_route: ReadWrite<u64>),
+        (0x18 => _reserved),
         (0x20 => @END),
     }
 }
@@ -125,8 +128,7 @@ impl Hpet {
         self.set_enable(false);
         for i in 0..num_timers {
             // disable all timers
-            let conf_caps =
-                unsafe { TimerConfCaps::from_bits_unchecked(self.timer_regs(i).conf_caps.get()) };
+            let conf_caps = TimerConfCaps::from_bits_retain(self.timer_regs(i).conf_caps.get());
             self.timer_regs(i)
                 .conf_caps
                 .set((conf_caps - TimerConfCaps::TN_INT_ENB_CNF).bits());
@@ -148,8 +150,7 @@ impl Hpet {
     #[allow(dead_code)]
     fn set_periodic_timer(&mut self, n: u8, period_nanos: u64) {
         let timer_regs = self.timer_regs(n);
-        let mut conf_caps =
-            unsafe { TimerConfCaps::from_bits_unchecked(timer_regs.conf_caps.get()) };
+        let mut conf_caps = TimerConfCaps::from_bits_retain(timer_regs.conf_caps.get());
         assert!(conf_caps.contains(TimerConfCaps::TN_PER_INT_CAP));
 
         let ticks = self.nanos_to_ticks_ratio.mul(period_nanos);

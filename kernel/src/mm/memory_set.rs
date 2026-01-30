@@ -169,7 +169,7 @@ impl MemorySet {
     }
 
     pub fn load_user(&mut self, elf_data: &[u8]) -> (VirtAddr, VirtAddr) {
-        use xmas_elf::program::{Flags, SegmentData, Type};
+        use xmas_elf::program::{SegmentData, Type};
         use xmas_elf::{header, ElfFile};
 
         let elf = ElfFile::new(elf_data).expect("invalid ELF file");
@@ -192,22 +192,6 @@ impl MemorySet {
             expect_arch,
             "invalid ELF arch"
         );
-
-        impl From<Flags> for MemFlags {
-            fn from(f: Flags) -> Self {
-                let mut ret = MemFlags::USER;
-                if f.is_read() {
-                    ret |= MemFlags::READ;
-                }
-                if f.is_write() {
-                    ret |= MemFlags::WRITE;
-                }
-                if f.is_execute() {
-                    ret |= MemFlags::EXECUTE;
-                }
-                ret
-            }
-        }
 
         for ph in elf.program_iter() {
             if ph.get_type() != Ok(Type::Load) {
@@ -290,37 +274,37 @@ pub fn init_kernel_aspace() {
 
     // map kernel sections
     map_range(
-        stext as usize,
-        etext as usize,
+        stext as *const () as usize,
+        etext as *const () as usize,
         MemFlags::READ | MemFlags::EXECUTE,
         ".text",
     );
     map_range(
-        srodata as usize,
-        erodata as usize,
+        srodata as *const () as usize,
+        erodata as *const () as usize,
         MemFlags::READ,
         ".rodata",
     );
     map_range(
-        sdata as usize,
-        edata as usize,
+        sdata as *const () as usize,
+        edata as *const () as usize,
         MemFlags::READ | MemFlags::WRITE,
         ".data",
     );
     map_range(
-        sbss as usize,
-        ebss as usize,
+        sbss as *const () as usize,
+        ebss as *const () as usize,
         MemFlags::READ | MemFlags::WRITE,
         ".bss",
     );
     map_range(
-        boot_stack as usize,
-        boot_stack_top as usize,
+        boot_stack as *const () as usize,
+        boot_stack_top as *const () as usize,
         MemFlags::READ | MemFlags::WRITE,
         "boot stack",
     );
     map_range(
-        ekernel as usize,
+        ekernel as *const () as usize,
         phys_to_virt(PHYS_MEMORY_END),
         MemFlags::READ | MemFlags::WRITE,
         "physical memory",
@@ -365,9 +349,18 @@ impl fmt::Debug for MemorySet {
 #[allow(dead_code)]
 pub fn remap_test() {
     let pt = &KERNEL_ASPACE.pt;
-    let mid_text = VirtAddr::new(stext as usize + (etext as usize - stext as usize) / 2);
-    let mid_rodata = VirtAddr::new(srodata as usize + (erodata as usize - srodata as usize) / 2);
-    let _mid_data = VirtAddr::new(sdata as usize + (edata as usize - sdata as usize) / 2);
+    let mid_text = VirtAddr::new(
+        stext as *const () as usize
+            + (etext as *const () as usize - stext as *const () as usize) / 2,
+    );
+    let mid_rodata = VirtAddr::new(
+        srodata as *const () as usize
+            + (erodata as *const () as usize - srodata as *const () as usize) / 2,
+    );
+    let _mid_data = VirtAddr::new(
+        sdata as *const () as usize
+            + (edata as *const () as usize - sdata as *const () as usize) / 2,
+    );
     assert!(!pt.query(mid_text).unwrap().1.contains(MemFlags::WRITE));
     assert!(!pt.query(mid_rodata).unwrap().1.contains(MemFlags::EXECUTE));
     if let Some(region) = MMIO_REGIONS.first() {

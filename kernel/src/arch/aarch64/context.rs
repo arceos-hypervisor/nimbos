@@ -1,4 +1,4 @@
-use core::arch::asm;
+use core::arch::{asm, naked_asm};
 
 use cortex_a::registers::SPSR_EL1;
 
@@ -137,9 +137,9 @@ impl TaskContext {
     }
 }
 
-#[naked]
+#[unsafe(naked)]
 unsafe extern "C" fn context_switch(_current_task: &mut TaskContext, _next_task: &TaskContext) {
-    asm!(
+    naked_asm!(
         "
         // save old context (callee-saved registers)
         stp     x29, x30, [x0, 12 * 8]
@@ -164,6 +164,5 @@ unsafe extern "C" fn context_switch(_current_task: &mut TaskContext, _next_task:
         ldp     x29, x30, [x1, 12 * 8]
 
         ret",
-        options(noreturn),
     )
 }

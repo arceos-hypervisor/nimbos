@@ -31,6 +31,8 @@ impl IdtStruct {
             core::slice::from_raw_parts_mut(self.table as *mut _ as *mut Entry<HandlerFunc>, 256)
         };
         for i in 0..NUM_INT {
+            // thank you clippy but we know what we are doing
+            #[allow(clippy::missing_transmute_annotations)]
             let opt = entries[i].set_handler_fn(unsafe { core::mem::transmute(ENTRIES[i]) });
             if i == 0x80 {
                 // syscall via `int 0x80`

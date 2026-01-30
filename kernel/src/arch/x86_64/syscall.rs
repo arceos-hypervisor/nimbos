@@ -25,7 +25,7 @@ pub fn init_percpu() {
         fn syscall_entry();
     }
     unsafe {
-        LStar::write(VirtAddr::new(syscall_entry as usize as _));
+        LStar::write(VirtAddr::new(syscall_entry as *const () as usize as _));
         Star::write(
             UCODE64_SELECTOR,
             UDATA_SELECTOR,

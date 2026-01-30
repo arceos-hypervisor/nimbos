@@ -3,6 +3,7 @@ mod schedule;
 mod structs;
 mod wait_queue;
 
+#[allow(unused_imports)]
 pub use structs::{CurrentTask, Task, TaskId};
 
 use alloc::sync::Arc;
@@ -23,7 +24,7 @@ pub fn init() {
     manager::init();
 
     ROOT_TASK.init_by(Task::new_kernel(
-        |_| loop {
+        |_| {
             let curr_task = current();
             while curr_task.waitpid(-1, 0).is_some() {}
             // instructions::wait_for_ints();
@@ -51,7 +52,7 @@ pub fn init() {
     const USER_ENTRY: &str = {
         match core::option_env!("USER_ENTRY") {
             Some(s) => s,
-            None => panic!("USER_ENTRY is not defined, please set it in environment variables, or specify it when executing `make`."),
+            None => "user_shell",
         }
     };
     m.spawn(Task::new_user(USER_ENTRY));

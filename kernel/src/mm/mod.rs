@@ -9,17 +9,35 @@ pub mod paging;
 pub use address::{PhysAddr, VirtAddr};
 pub use frame_allocator::PhysFrame;
 pub use memory_set::{kernel_aspace, MapArea, MemorySet};
+#[allow(unused_imports)]
 pub use uaccess::{UserInOutPtr, UserInPtr, UserOutPtr};
 
 pub const PAGE_SIZE: usize = 0x1000;
 
 bitflags::bitflags! {
+    #[derive(Debug, Clone, Copy, Eq, PartialEq)]
     pub struct MemFlags: usize {
         const READ          = 1 << 0;
         const WRITE         = 1 << 1;
         const EXECUTE       = 1 << 2;
         const USER          = 1 << 3;
         const DEVICE        = 1 << 4;
+    }
+}
+
+impl From<xmas_elf::program::Flags> for MemFlags {
+    fn from(f: xmas_elf::program::Flags) -> Self {
+        let mut ret = MemFlags::USER;
+        if f.is_read() {
+            ret |= MemFlags::READ;
+        }
+        if f.is_write() {
+            ret |= MemFlags::WRITE;
+        }
+        if f.is_execute() {
+            ret |= MemFlags::EXECUTE;
+        }
+        ret
     }
 }
 

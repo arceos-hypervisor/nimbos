@@ -12,7 +12,7 @@ pub fn init() {
     extern "C" {
         fn exception_vector_base();
     }
-    VBAR_EL1.set(exception_vector_base as usize as _);
+    VBAR_EL1.set(exception_vector_base as *const () as usize as _);
 }
 
 #[repr(u8)]

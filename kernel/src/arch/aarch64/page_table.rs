@@ -5,6 +5,7 @@ use crate::mm::{MemFlags, PhysAddr, PAGE_SIZE};
 
 bitflags::bitflags! {
     /// Memory attribute fields in the VMSAv8-64 translation table format descriptors.
+    #[derive(Debug, Clone, Copy, Eq, PartialEq)]
     pub struct DescriptorAttr: u64 {
         // Attribute fields in stage 1 VMSAv8-64 Block and Page descriptors:
 
@@ -61,6 +62,7 @@ enum MemType {
 }
 
 impl DescriptorAttr {
+    #[allow(clippy::unusual_byte_groupings)] // as it's a mask
     const ATTR_INDEX_MASK: u64 = 0b111_00;
 
     const fn from_mem_type(mem_type: MemType) -> Self {
